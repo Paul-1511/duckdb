@@ -242,7 +242,17 @@ archivos locales disponibles.
 
 ## Como reproducir los benchmarks
 
-<!-- TODO (Ejercicio 6) -->
+Con ambos años descargados, abra `notebooks/duck.ipynb` en JupyterLab y ejecute
+las celdas en orden hasta el Ejercicio 6. El notebook crea la tabla
+`viajes` en `data/processed/ejercicio_6_benchmark.duckdb`, valida que las
+consultas Parquet y tabla produzcan resultados equivalentes, y presenta tiempos
+para 2026 y para 2024+2026. La primera ejecución materializa los datos y puede
+tardar; necesita espacio adicional en disco. El archivo DuckDB se conserva
+localmente y está excluido de Git. Para reconstruirlo tras cambiar los Parquet,
+vuelva a ejecutar la celda de materialización y después las celdas de benchmark.
+Las mediciones utilizan una ejecución de calentamiento y tres repeticiones con
+caché caliente; registre hardware y versión de DuckDB al comparar con otras
+máquinas.
 
 ## Como generar los resultados principales
 
