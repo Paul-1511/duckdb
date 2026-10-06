@@ -119,7 +119,56 @@ generar los resultados principales.
 
 ## Como levantar el ambiente
 
-<!-- TODO (Ejercicio 1.5) -->
+Desde la raiz del repositorio, construya las imagenes e inicie los servicios:
+
+```bash
+docker compose up --build -d
+```
+
+La primera construccion descarga las imagenes base y las dependencias, por lo
+que puede tardar varios minutos. Para comprobar el estado de los contenedores:
+
+```bash
+docker compose ps
+```
+
+Ambos servicios deben aparecer como `running` (o `Up`):
+
+- **JupyterLab**: <http://localhost:8888>. Permite trabajar con notebooks y
+  scripts Python dentro del contenedor `lab`.
+- **Metabase**: <http://localhost:3000>. En el primer inicio, complete la
+  configuracion inicial de Metabase para acceder a su interfaz y configurar
+  las consultas y visualizaciones.
+
+Las carpetas `data/`, `notebooks/`, `scripts/`, `sql/` y `docs/` del repositorio
+se montan en `/workspace/` dentro de `lab`, por lo que los cambios en ellas se
+conservan en la computadora anfitriona. Metabase tambien puede acceder a
+`data/`, montada en `/workspace/data`.
+
+El ambiente incluye Python 3.11 con JupyterLab, DuckDB, pandas, PyArrow,
+Matplotlib y Requests; Metabase incluye el driver de DuckDB. Las versiones de
+los paquetes Python estan fijadas en `requirements.txt`, y las versiones de
+Metabase y su driver se definen en `metabase.Dockerfile`.
+
+Para ver los registros de inicio o detener los servicios:
+
+```bash
+docker compose logs
+docker compose down
+```
+
+`docker compose down` detiene y elimina los contenedores, pero conserva el
+volumen de datos de Metabase y los archivos del proyecto montados desde el
+anfitrion. Para volver a iniciar el ambiente sin reconstruir las imagenes,
+ejecute `docker compose up -d`.
+
+Un ambiente reproducible es importante porque permite que las personas del
+equipo ejecuten el analisis con las mismas versiones de las herramientas y la
+misma configuracion, reduciendo diferencias causadas por instalaciones locales.
+Asi se pueden repetir y verificar las consultas y los resultados, colaborar con
+menos problemas de compatibilidad y mantener un registro claro de como se
+produjeron los resultados. En este proyecto tambien facilita reconstruir el
+entorno sin versionar los grandes archivos de datos.
 
 ## Como descargar los datos
 
