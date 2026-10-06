@@ -59,11 +59,32 @@ def ruta_destino(tipo: str, mes: int) -> Path:
 
 def esta_publicado(url: str) -> bool:
     """Indica si el archivo existe en el servidor (sin descargarlo)."""
-    try:
-        respuesta = requests.head(url, timeout=TIEMPO_ESPERA, allow_redirects=True)
-    except requests.RequestException:
-        return False
-    return respuesta.ok
+    ultimo_error = None
+    for intento in range(1, INTENTOS + 1):
+        try:
+            respuesta = requests.head(
+                url, timeout=TIEMPO_ESPERA, allow_redirects=True
+            )
+            # CloudFront responde 403 o 404 para meses aun no publicados.
+            if respuesta.status_code in (403, 404):
+                return False
+            if respuesta.ok:
+                return True
+            respuesta.raise_for_status()
+            raise requests.RequestException(
+                f"respuesta HTTP inesperada: {respuesta.status_code}"
+            )
+        except requests.RequestException as error:
+            ultimo_error = error
+            if intento < INTENTOS:
+                print(
+                    f"      consulta HEAD {intento}/{INTENTOS} fallida "
+                    f"({error}); reintentando"
+                )
+
+    raise requests.RequestException(
+        f"no se pudo consultar la disponibilidad de {url}: {ultimo_error}"
+    )
 
 
 def formato_tamanio(n: float) -> str:
@@ -84,6 +105,15 @@ def descargar_archivo(url: str, destino: Path) -> int:
         try:
             with requests.get(url, stream=True, timeout=TIEMPO_ESPERA) as respuesta:
                 respuesta.raise_for_status()
+                encabezado_longitud = respuesta.headers.get("Content-Length")
+                longitud_esperada = None
+                if encabezado_longitud is not None:
+                    try:
+                        longitud_esperada = int(encabezado_longitud)
+                    except ValueError as error:
+                        raise requests.RequestException(
+                            f"Content-Length invalido: {encabezado_longitud}"
+                        ) from error
                 escritos = 0
                 with temporal.open("wb") as archivo:
                     for bloque in respuesta.iter_content(chunk_size=BLOQUE):
@@ -92,6 +122,11 @@ def descargar_archivo(url: str, destino: Path) -> int:
                             escritos += len(bloque)
             if escritos == 0:
                 raise requests.RequestException("el servidor devolvio un archivo vacio")
+            if longitud_esperada is not None and escritos != longitud_esperada:
+                raise requests.RequestException(
+                    f"descarga incompleta: se esperaban {longitud_esperada} bytes "
+                    f"y se recibieron {escritos}"
+                )
             temporal.replace(destino)
             return escritos
         except requests.RequestException as error:
@@ -118,7 +153,14 @@ def descargar(tipo: str) -> dict:
             continue
 
         url = construir_url(tipo, mes)
-        if not esta_publicado(url):
+        try:
+            publicado = esta_publicado(url)
+        except requests.RequestException as error:
+            print(f"  {etiqueta}  ERROR al consultar disponibilidad: {error}")
+            resumen["fallidos"].append(etiqueta)
+            continue
+
+        if not publicado:
             print(f"  {etiqueta}  aun no publicado por la TLC")
             resumen["no_publicados"].append(etiqueta)
             continue

@@ -172,7 +172,45 @@ entorno sin versionar los grandes archivos de datos.
 
 ## Como descargar los datos
 
-<!-- TODO (Ejercicios 2.6, 5.1 y 8.1) -->
+El script `scripts/download_data.py` obtiene los archivos Parquet mensuales de
+taxis amarillos (`yellow`) y verdes (`green`) publicados por la TLC para 2026.
+Desde la raiz del repositorio, ejecute ambos tipos:
+
+```bash
+docker compose exec lab python scripts/download_data.py
+```
+
+Tambien puede solicitar un solo tipo:
+
+```bash
+docker compose exec lab python scripts/download_data.py --taxi yellow
+docker compose exec lab python scripts/download_data.py --taxi green
+```
+
+El script revisa los 12 meses de cada tipo en la fuente TLC y descarga solo
+aquellos que estan publicados. Los archivos se guardan como
+`data/raw/<tipo>/2026/<tipo>_tripdata_2026-MM.parquet`. Si un archivo no vacio
+ya existe en esa ruta, se omite; las descargas nuevas se escriben primero a un
+archivo temporal y se renombran al terminar. Se comprueba que la cantidad de
+bytes recibida coincida con el `Content-Length` anunciado por el servidor cuando
+este encabezado esta disponible. Los errores de conexion y descarga se muestran
+en el resumen y hacen que el proceso termine con codigo distinto de cero.
+
+Los cambios realizados al script limitan el alcance a Yellow y Green de 2026,
+construyen los nombres y rutas por mes, consultan cuales archivos estan
+publicados en vez de asumir que el año esta completo y evitan volver a
+descargar archivos locales existentes. Ademas, distinguen los meses no
+publicados de los errores de conexion, reintentan las consultas y verifican el
+tamaño de cada descarga cuando el servidor anuncia el `Content-Length`.
+
+La completitud se determina comparando los 12 meses posibles de cada tipo con
+la disponibilidad reportada por la fuente TLC y confirmando que todos los
+meses publicados aparecen como descargados o ya existentes en el resumen, sin
+fallos. En la ejecucion del 6 de octubre de 2026, la fuente respondio que estaban
+publicados enero a agosto para ambos tipos: se esperaban 16 archivos. Los meses
+de septiembre a diciembre aun no estaban publicados; vuelva a ejecutar el
+script para incorporar los nuevos meses cuando la TLC los publique. Los
+archivos descargados se mantienen localmente y no se incluyen en Git.
 
 ## Como ejecutar el analisis
 
