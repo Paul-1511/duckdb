@@ -212,6 +212,14 @@ de septiembre a diciembre aun no estaban publicados; vuelva a ejecutar el
 script para incorporar los nuevos meses cuando la TLC los publique. Los
 archivos descargados se mantienen localmente y no se incluyen en Git.
 
+## Ejercicio 3: exploracion directa de Parquet
+
+La documentacion, las consultas ejecutables, los resultados observados y las
+decisiones de los puntos 3.1–3.9 estan centralizados en el notebook
+[`notebooks/duck.ipynb`](./notebooks/duck.ipynb). Abra el archivo con JupyterLab
+o VS Code y ejecute las celdas en orden para repetir la exploracion directamente
+sobre los Parquet descargados.
+
 ## Como ejecutar el analisis
 
 <!-- TODO -->
