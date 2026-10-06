@@ -222,7 +222,22 @@ sobre los Parquet descargados.
 
 ## Como ejecutar el analisis
 
-<!-- TODO -->
+Inicie los servicios si aun no estan activos y abra JupyterLab en
+<http://localhost:8888>:
+
+```bash
+docker compose up -d
+```
+
+En JupyterLab, abra `notebooks/duck.ipynb` y ejecute las celdas en orden. El
+notebook contiene la exploracion del Ejercicio 3 y el analisis exploratorio del
+Ejercicio 4, incluidas las preguntas, consultas DuckDB, resultados, graficas y
+hallazgos. Las consultas leen directamente los Parquet bajo `data/raw/`; si
+todavia no los ha descargado, siga primero la seccion [Como descargar los
+datos](#como-descargar-los-datos). Puede volver a ejecutar
+`scripts/download_data.py` para incorporar meses TLC recientemente publicados;
+al reejecutar las celdas, los conteos y graficas se actualizaran con los
+archivos locales disponibles.
 
 ## Como reproducir los benchmarks
 
